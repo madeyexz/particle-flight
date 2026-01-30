@@ -25,7 +25,7 @@ This project is inspired by [SCREE - Infinite Flight](https://www.scree.app/) by
 |-----|--------|
 | `Mouse` | Steer |
 | `W` / `S` | Throttle up/down |
-| `A` / `D` | Strafe left/right |
+| `A` / `D` | Yaw (rudder) |
 | `Shift` | Boost |
 | `Space` | Sonar ping |
 | `R` | Toggle terrain highlight |

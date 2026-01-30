@@ -20,8 +20,9 @@ export class FlightController {
 
     // Control inputs
     this.throttle = 0;      // W/S for throttle
-    this.rollInput = 0;     // A/D for roll
+    this.yawInput = 0;      // A/D for yaw (rudder)
     this.boost = false;     // Shift for afterburner
+    this.invertY = false;   // Mouse invert option
 
     // Afterburner system
     this.afterburnerFuel = 100;
@@ -49,12 +50,13 @@ export class FlightController {
     this.fpsSensitivity = 0.0015;
 
     // BF2042-style physics tuning
-    this.pitchRate = 2.2;          // Base pitch rate
-    this.yawRate = 0.8;            // Base yaw rate (slower than pitch)
-    this.rollRate = 3.5;           // Roll rate
-    this.angularDamping = 2.5;     // How fast rotation slows
-    this.autoLevelRoll = 0.3;      // Auto-level roll strength
-    this.autoLevelPitch = 0.15;    // Auto-level pitch strength
+    this.pitchRate = 2.6;          // Base pitch rate
+    this.yawRate = 1.0;            // Rudder yaw rate (keyboard)
+    this.rollRate = 4.6;           // Mouse roll rate
+    this.bankTurnRate = 1.6;       // Roll -> yaw coupling strength
+    this.angularDamping = 3.2;     // How fast rotation slows
+    this.autoLevelRoll = 0.6;      // Auto-level roll strength
+    this.autoLevelPitch = 0.2;     // Auto-level pitch strength
 
     // Speed affects handling
     this.speedHandlingMin = 0.5;   // Handling at max speed
@@ -90,12 +92,17 @@ export class FlightController {
     this.cameraMode = mode;
   }
 
+  setInvertY(enabled) {
+    this.invertY = Boolean(enabled);
+  }
+
   handleMouseMove(movementX, movementY) {
     const sensitivity = this.cameraMode === 1 ? this.fpsSensitivity : this.mouseSensitivity;
+    const invertMultiplier = this.invertY ? -1 : 1;
 
     // Accumulate mouse input
     this.mouseX += movementX * sensitivity;
-    this.mouseY += movementY * sensitivity;
+    this.mouseY += movementY * sensitivity * invertMultiplier;
   }
 
   // Calculate handling modifier based on speed (faster = less agile)
@@ -153,29 +160,29 @@ export class FlightController {
     const pitchInput = -this.mouseY * this.pitchRate * handling;
     this.pitchVelocity += pitchInput;
 
-    // Mouse X controls yaw (direct) + induces roll
-    const yawInput = -this.mouseX * this.yawRate * handling;
-    this.yawVelocity += yawInput;
+    // Mouse X controls roll (bank)
+    const rollInput = -this.mouseX * this.rollRate * handling;
+    this.rollVelocity += rollInput;
 
-    // A/D controls roll directly
-    const rollInput = this.rollInput * this.rollRate * handling;
-    this.rollVelocity += rollInput * delta * 60;
-
-    // Roll from yaw input (banking into turns like BF2042)
-    this.rollVelocity += this.mouseX * 1.5 * handling;
+    // A/D controls yaw (rudder)
+    const yawInput = this.yawInput * this.yawRate * handling;
+    this.yawVelocity += yawInput * delta * 60;
 
     // Angular damping (momentum decay)
     this.pitchVelocity *= Math.pow(0.1, delta * this.angularDamping);
     this.yawVelocity *= Math.pow(0.1, delta * this.angularDamping);
     this.rollVelocity *= Math.pow(0.1, delta * this.angularDamping * 0.8);
 
-    // Apply angular velocities
+    // Apply angular velocities (banked turns drive yaw)
+    const bankedYawRate = Math.sin(this.roll) * this.bankTurnRate * handling * (this.speed / this.cruiseSpeed);
+    const yawRate = this.yawVelocity + bankedYawRate;
+
     this.pitch += this.pitchVelocity * delta;
-    this.yaw += this.yawVelocity * delta;
+    this.yaw += yawRate * delta;
     this.roll += this.rollVelocity * delta;
 
     // Auto-level roll when not inputting
-    if (Math.abs(this.mouseX) < 0.01 && Math.abs(this.rollInput) < 0.1) {
+    if (Math.abs(this.mouseX) < 0.01) {
       this.roll = THREE.MathUtils.lerp(this.roll, 0, delta * this.autoLevelRoll);
     }
 
@@ -193,7 +200,7 @@ export class FlightController {
     this.mouseY *= 0.8;
 
     // === CALCULATE G-FORCE ===
-    const angularIntensity = Math.abs(this.pitchVelocity) * 2 + Math.abs(this.yawVelocity);
+    const angularIntensity = Math.abs(this.pitchVelocity) * 2 + Math.abs(yawRate);
     this.gForce = 1.0 + angularIntensity * (this.speed / this.cruiseSpeed) * 0.5;
     this.gForce = Math.min(this.gForce, this.maxGForce);
     this.gForceSmoothed = THREE.MathUtils.lerp(this.gForceSmoothed, this.gForce, delta * 8);

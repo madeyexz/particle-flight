@@ -6,8 +6,8 @@ import { createSonarEffect, updateSonarEffects } from './effects.js';
 
 // Scene setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0d1117);
-scene.fog = new THREE.FogExp2(0x0d1117, 0.001);
+scene.background = new THREE.Color(0x0a0a0f);
+scene.fog = new THREE.FogExp2(0x0a0a0f, 0.001);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
@@ -21,7 +21,7 @@ document.body.appendChild(renderer.domElement);
 
 // Create terrain
 const terrain = createTerrain(scene);
-terrain.material.uniforms.highlight.value = 1.0; // Heightmap on by default
+terrain.material.uniforms.highlight.value = 1.0;
 
 // Create airplane
 const airplane = createAirplane();
@@ -32,96 +32,103 @@ const controller = new FlightController(airplane, camera);
 
 // State
 let isStarted = false;
-let groundHighlight = true; // On by default
+let groundHighlight = true;
 let cameraMode = 0;
+let lastAltitude = 0;
+let verticalSpeed = 0;
 
-// HUD elements
-const speedArc = document.getElementById('speed-arc');
+// HUD Elements
 const speedValue = document.getElementById('speed-value');
-const speedDisplay = document.getElementById('speed-display');
-const altArc = document.getElementById('alt-arc');
 const altValue = document.getElementById('alt-value');
-const altDisplay = document.getElementById('alt-display');
+const speedTape = document.getElementById('speed-tape');
+const altTape = document.getElementById('alt-tape');
+const compassTape = document.getElementById('compass-tape');
+const headingValue = document.getElementById('heading-value');
+const pitchLadder = document.getElementById('pitch-ladder');
+const rollPointer = document.getElementById('roll-pointer');
+const gForceEl = document.getElementById('g-force');
+const throttleFill = document.getElementById('throttle-fill');
+const afterburnerFill = document.getElementById('afterburner-fill');
+const verticalSpeedEl = document.getElementById('vertical-speed');
 
-// Arc configuration
-const arcLength = 180; // Approximate arc length
+// Initialize HUD components
+function initHUD() {
+  // Generate speed tape marks
+  generateTapeMarks(speedTape, 0, 500, 20, true);
 
-// Initialize arcs with stroke-dasharray
-speedArc.style.strokeDasharray = arcLength;
-speedArc.style.strokeDashoffset = arcLength;
-altArc.style.strokeDasharray = arcLength;
-altArc.style.strokeDashoffset = arcLength;
+  // Generate altitude tape marks
+  generateTapeMarks(altTape, 0, 500, 20, false);
 
-// Generate tick marks for gauges
-function generateTicks(containerId, isLeft) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+  // Generate compass tape
+  generateCompassTape();
 
-  const tickCount = 12;
+  // Generate pitch ladder marks
+  generatePitchLadder();
+}
 
-  for (let i = 0; i <= tickCount; i++) {
-    const t = i / tickCount;
+function generateTapeMarks(container, min, max, step, isSpeed) {
+  container.innerHTML = '';
 
-    // Calculate position along the quadratic bezier curve
-    // For left gauge: M 85 130 Q 85 10 15 10
-    // For right gauge: M 15 130 Q 15 10 85 10
-    let x, y;
+  for (let val = min; val <= max; val += step / 2) {
+    const mark = document.createElement('div');
+    mark.className = 'tape-mark';
 
-    if (isLeft) {
-      // Bezier: P0(85,130), P1(85,10), P2(15,10)
-      const p0 = { x: 85, y: 130 };
-      const p1 = { x: 85, y: 10 };
-      const p2 = { x: 15, y: 10 };
-      x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
-      y = (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y;
-    } else {
-      // Bezier: P0(15,130), P1(15,10), P2(85,10)
-      const p0 = { x: 15, y: 130 };
-      const p1 = { x: 15, y: 10 };
-      const p2 = { x: 85, y: 10 };
-      x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
-      y = (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y;
+    const isMajor = val % step === 0;
+
+    const line = document.createElement('div');
+    line.className = `tape-mark-line ${isMajor ? 'major' : ''}`;
+    mark.appendChild(line);
+
+    if (isMajor) {
+      const value = document.createElement('span');
+      value.className = 'tape-mark-value';
+      value.textContent = val;
+      mark.appendChild(value);
     }
 
-    // Create tick mark
-    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    // Position from bottom (higher values at top)
+    mark.style.bottom = `${((val - min) / (max - min)) * 500}px`;
 
-    // Offset tick outward from curve
-    const offsetX = isLeft ? 8 : -8;
-
-    tick.setAttribute('x', x + offsetX - 1);
-    tick.setAttribute('y', y - 2);
-    tick.setAttribute('width', i % 3 === 0 ? 6 : 3);
-    tick.setAttribute('height', 2);
-    tick.setAttribute('fill', '#f90');
-    tick.setAttribute('opacity', i % 3 === 0 ? '0.8' : '0.4');
-
-    container.appendChild(tick);
+    container.appendChild(mark);
   }
 }
 
-generateTicks('speed-ticks', true);
-generateTicks('alt-ticks', false);
+function generateCompassTape() {
+  compassTape.innerHTML = '';
 
-// Get position along bezier curve
-function getBezierPoint(t, isLeft) {
-  if (isLeft) {
-    const p0 = { x: 85, y: 130 };
-    const p1 = { x: 85, y: 10 };
-    const p2 = { x: 15, y: 10 };
-    return {
-      x: (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x,
-      y: (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y
-    };
-  } else {
-    const p0 = { x: 15, y: 130 };
-    const p1 = { x: 15, y: 10 };
-    const p2 = { x: 85, y: 10 };
-    return {
-      x: (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x,
-      y: (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y
-    };
+  const directions = ['N', '', '', 'E', '', '', 'S', '', '', 'W', '', ''];
+
+  // Create marks for 720 degrees (two full rotations for seamless wrapping)
+  for (let deg = 0; deg < 720; deg += 10) {
+    const mark = document.createElement('div');
+    mark.className = 'compass-mark';
+
+    const isMajor = deg % 30 === 0;
+
+    const line = document.createElement('div');
+    line.className = `compass-mark-line ${isMajor ? 'major' : ''}`;
+    mark.appendChild(line);
+
+    if (isMajor) {
+      const normalizedDeg = deg % 360;
+      const dirIndex = Math.floor(normalizedDeg / 30);
+      const label = document.createElement('span');
+      label.className = 'compass-mark-label';
+
+      if (directions[dirIndex]) {
+        label.textContent = directions[dirIndex];
+      } else {
+        label.textContent = normalizedDeg.toString().padStart(3, '0');
+      }
+      mark.appendChild(label);
+    }
+
+    compassTape.appendChild(mark);
   }
+}
+
+function generatePitchLadder() {
+  // Keep only the horizon line, pitch marks are updated dynamically
 }
 
 // Start game
@@ -148,8 +155,8 @@ document.addEventListener('keydown', (e) => {
   switch (e.key.toLowerCase()) {
     case 'w': controller.throttle = 1; break;
     case 's': controller.throttle = -1; break;
-    case 'a': controller.rollInput = -1; break;
-    case 'd': controller.rollInput = 1; break;
+    case 'a': controller.yawInput = -1; break;
+    case 'd': controller.yawInput = 1; break;
     case 'shift': controller.boost = true; break;
     case ' ':
       e.preventDefault();
@@ -171,7 +178,7 @@ document.addEventListener('keyup', (e) => {
 
   switch (e.key.toLowerCase()) {
     case 'w': case 's': controller.throttle = 0; break;
-    case 'a': case 'd': controller.rollInput = 0; break;
+    case 'a': case 'd': controller.yawInput = 0; break;
     case 'shift': controller.boost = false; break;
   }
 });
@@ -187,64 +194,81 @@ document.addEventListener('click', () => {
   }
 });
 
-// Afterburner bar element
-const afterburnerBar = document.getElementById('afterburner-bar');
-const afterburnerFill = document.getElementById('afterburner-fill');
-const gForceDisplay = document.getElementById('g-force');
-
 // Update HUD
-function updateHUD() {
+function updateHUD(delta) {
   const speed = controller.speed;
   const alt = airplane.position.y;
+  const pitch = controller.pitch;
+  const roll = controller.roll;
+  const yaw = controller.yaw;
 
-  // Speed gauge (max 420 for afterburner)
-  const speedPercent = Math.min(speed / 420, 1);
-  const speedOffset = arcLength * (1 - speedPercent);
-  speedArc.style.strokeDashoffset = speedOffset;
+  // Calculate vertical speed
+  verticalSpeed = THREE.MathUtils.lerp(verticalSpeed, (alt - lastAltitude) / delta, delta * 5);
+  lastAltitude = alt;
+
+  // Speed tape
   speedValue.textContent = Math.round(speed);
+  const speedOffset = (speed / 500) * 500 - 90; // Center on current value
+  speedTape.style.transform = `translateY(${speedOffset}px)`;
 
-  // Position speed value along the arc
-  const speedPos = getBezierPoint(speedPercent, true);
-  speedDisplay.style.top = `${speedPos.y / 140 * 100}%`;
-  speedDisplay.style.left = `${speedPos.x / 100 * 100 - 35}%`;
-
-  // Altitude gauge (max 400)
-  const altPercent = Math.min(alt / 400, 1);
-  const altOffset = arcLength * (1 - altPercent);
-  altArc.style.strokeDashoffset = altOffset;
+  // Altitude tape
   altValue.textContent = Math.round(alt);
+  const altOffset = (alt / 500) * 500 - 90;
+  altTape.style.transform = `translateY(${altOffset}px)`;
 
-  // Position alt value along the arc
-  const altPos = getBezierPoint(altPercent, false);
-  altDisplay.style.top = `${altPos.y / 140 * 100}%`;
-  altDisplay.style.right = `${(100 - altPos.x) / 100 * 100 - 35}%`;
+  // Heading compass
+  const headingDeg = (((-yaw * 180 / Math.PI) % 360) + 360) % 360;
+  headingValue.textContent = Math.round(headingDeg).toString().padStart(3, '0');
 
-  // Afterburner fuel bar
-  if (afterburnerFill) {
-    const fuelPercent = controller.getAfterburnerPercent();
-    afterburnerFill.style.width = `${fuelPercent * 100}%`;
+  // Each compass mark is 20px wide, 10 degrees apart = 2px per degree
+  const compassOffset = 100 - (headingDeg * 2); // Center offset
+  compassTape.style.transform = `translateX(${compassOffset}px)`;
 
-    // Color based on fuel level
-    if (fuelPercent < 0.2) {
-      afterburnerFill.style.background = '#f44';
-    } else if (controller.afterburnerActive) {
-      afterburnerFill.style.background = '#ff6600';
-    } else {
-      afterburnerFill.style.background = '#4af';
-    }
+  // Roll indicator
+  const rollDeg = roll * 180 / Math.PI;
+  rollPointer.style.transform = `rotate(${rollDeg}deg)`;
+
+  // Pitch ladder - update horizon line rotation based on roll
+  const horizonLine = pitchLadder.querySelector('.horizon-line');
+  if (horizonLine) {
+    const pitchOffset = pitch * 100; // pixels per radian
+    horizonLine.style.transform = `translateY(calc(-50% + ${pitchOffset}px)) rotate(${rollDeg}deg)`;
   }
 
-  // G-Force display
-  if (gForceDisplay) {
-    const g = controller.gForceSmoothed;
-    gForceDisplay.textContent = `${g.toFixed(1)}G`;
-    if (g > 4) {
-      gForceDisplay.style.color = '#f44';
-    } else if (g > 2.5) {
-      gForceDisplay.style.color = '#fa4';
-    } else {
-      gForceDisplay.style.color = '#4af';
-    }
+  // G-Force
+  const g = controller.gForceSmoothed;
+  gForceEl.textContent = g.toFixed(1);
+  gForceEl.classList.remove('warning', 'danger');
+  if (g > 4) {
+    gForceEl.classList.add('danger');
+  } else if (g > 2.5) {
+    gForceEl.classList.add('warning');
+  }
+
+  // Throttle bar
+  const throttlePercent = ((controller.speed - controller.minSpeed) /
+    (controller.cruiseSpeed - controller.minSpeed)) * 100;
+  throttleFill.style.width = `${Math.max(0, Math.min(100, throttlePercent))}%`;
+
+  // Afterburner bar
+  const abPercent = controller.getAfterburnerPercent() * 100;
+  afterburnerFill.style.width = `${abPercent}%`;
+  afterburnerFill.classList.remove('active', 'low');
+  if (controller.afterburnerActive) {
+    afterburnerFill.classList.add('active');
+  }
+  if (abPercent < 20) {
+    afterburnerFill.classList.add('low');
+  }
+
+  // Vertical speed
+  const vsText = verticalSpeed >= 0 ? `+${Math.round(verticalSpeed)}` : Math.round(verticalSpeed).toString();
+  verticalSpeedEl.textContent = vsText;
+  verticalSpeedEl.classList.remove('warning', 'danger');
+  if (verticalSpeed < -50) {
+    verticalSpeedEl.classList.add('danger');
+  } else if (verticalSpeed < -20) {
+    verticalSpeedEl.classList.add('warning');
   }
 }
 
@@ -267,10 +291,12 @@ function animate() {
     controller.update(delta);
     updateTerrain(terrain, airplane.position);
     updateSonarEffects(scene, delta);
-    updateHUD();
+    updateHUD(delta);
   }
 
   renderer.render(scene, camera);
 }
 
+// Initialize and start
+initHUD();
 animate();
