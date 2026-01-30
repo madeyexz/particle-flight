@@ -137,8 +137,8 @@ function updateHUD() {
   const speed = controller.speed;
   const alt = airplane.position.y;
 
-  // Speed gauge (max 10)
-  const speedPercent = Math.min(speed / 10, 1);
+  // Speed gauge (max 40)
+  const speedPercent = Math.min(speed / 40, 1);
   const speedOffset = arcLength * (1 - speedPercent);
   speedArc.style.strokeDashoffset = speedOffset;
   speedValue.textContent = speed.toFixed(1);

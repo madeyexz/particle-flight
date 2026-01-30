@@ -7,10 +7,10 @@ export class FlightController {
     this.camera = camera;
 
     // Flight state
-    this.speed = 3.0;
-    this.baseSpeed = 3.0;
-    this.maxSpeed = 10.0;
-    this.boostSpeed = 15.0;
+    this.speed = 15.0;
+    this.baseSpeed = 15.0;
+    this.maxSpeed = 40.0;
+    this.boostSpeed = 80.0;
 
     // Control inputs
     this.throttle = 0;
@@ -26,6 +26,7 @@ export class FlightController {
     this.targetPitch = 0;
     this.targetYaw = 0;
     this.mouseSensitivity = 0.002;
+    this.fpsSensitivity = 0.0008; // Lower sensitivity for first-person
 
     // Camera settings
     this.cameraMode = 0;
@@ -45,8 +46,10 @@ export class FlightController {
   }
 
   handleMouseMove(movementX, movementY) {
-    this.targetYaw -= movementX * this.mouseSensitivity;
-    this.targetPitch -= movementY * this.mouseSensitivity;
+    // Use lower sensitivity in first-person mode
+    const sensitivity = this.cameraMode === 1 ? this.fpsSensitivity : this.mouseSensitivity;
+    this.targetYaw -= movementX * sensitivity;
+    this.targetPitch -= movementY * sensitivity;
     this.targetPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, this.targetPitch));
   }
 
