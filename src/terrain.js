@@ -93,7 +93,7 @@ class SimplexNoise {
   }
 }
 
-const noise = new SimplexNoise(42);
+const noise = new SimplexNoise(Math.random() * 10000);
 
 // Get terrain height at position
 export function getTerrainHeight(x, z) {

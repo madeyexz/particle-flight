@@ -7,10 +7,15 @@ export class FlightController {
     this.camera = camera;
 
     // Flight state
-    this.speed = 15.0;
-    this.baseSpeed = 15.0;
-    this.maxSpeed = 40.0;
-    this.boostSpeed = 80.0;
+    this.speed = 60.0;
+    this.baseSpeed = 60.0;
+    this.maxSpeed = 160.0;
+    this.boostSpeed = 480.0;
+
+    // FOV for boost effect
+    this.baseFOV = 75;
+    this.boostFOV = 95;
+    this.currentFOV = 75;
 
     // Control inputs
     this.throttle = 0;
@@ -108,6 +113,12 @@ export class FlightController {
 
     // Update camera
     this.updateCamera(delta);
+
+    // FOV boost effect (zoom out when boosting)
+    const targetFOV = this.boost ? this.boostFOV : this.baseFOV;
+    this.currentFOV = THREE.MathUtils.lerp(this.currentFOV, targetFOV, delta * 5);
+    this.camera.fov = this.currentFOV;
+    this.camera.updateProjectionMatrix();
 
     // Gradually return to neutral pitch
     this.targetPitch *= 0.99;

@@ -21,6 +21,7 @@ document.body.appendChild(renderer.domElement);
 
 // Create terrain
 const terrain = createTerrain(scene);
+terrain.material.uniforms.highlight.value = 1.0; // Heightmap on by default
 
 // Create airplane
 const airplane = createAirplane();
@@ -31,7 +32,7 @@ const controller = new FlightController(airplane, camera);
 
 // State
 let isStarted = false;
-let groundHighlight = false;
+let groundHighlight = true; // On by default
 let cameraMode = 0;
 
 // HUD elements
@@ -191,8 +192,8 @@ function updateHUD() {
   const speed = controller.speed;
   const alt = airplane.position.y;
 
-  // Speed gauge (max 40)
-  const speedPercent = Math.min(speed / 40, 1);
+  // Speed gauge (max 160)
+  const speedPercent = Math.min(speed / 160, 1);
   const speedOffset = arcLength * (1 - speedPercent);
   speedArc.style.strokeDashoffset = speedOffset;
   speedValue.textContent = speed.toFixed(1);
