@@ -6,7 +6,7 @@ An infinite terrain flight simulator built with Three.js. Fly through a procedur
 
 ## Inspiration
 
-This project is inspired by [SCREE - Infinite Flight](https://www.scree.app/) by Taylor.
+This project is inspired by [SCREE - Infinite Flight](https://www.scree.app/) by [Taylor](https://www.threads.com/@taylor).
 
 ## Features
 
