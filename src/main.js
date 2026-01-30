@@ -36,6 +36,34 @@ let groundHighlight = true;
 let cameraMode = 0;
 let lastAltitude = 0;
 let verticalSpeed = 0;
+let settingsOpen = false;
+
+// Settings UI
+const settingsPanel = document.getElementById('settings-panel');
+const invertYToggle = document.getElementById('invert-y-toggle');
+
+function setSettingsOpen(open) {
+  settingsOpen = open;
+  if (settingsPanel) {
+    settingsPanel.classList.toggle('hidden', !open);
+    settingsPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+
+  if (open) {
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  } else if (isStarted) {
+    renderer.domElement.requestPointerLock();
+  }
+}
+
+if (invertYToggle) {
+  invertYToggle.checked = controller.invertY;
+  invertYToggle.addEventListener('change', () => {
+    controller.setInvertY(invertYToggle.checked);
+  });
+}
 
 // HUD Elements
 const speedValue = document.getElementById('speed-value');
@@ -170,6 +198,9 @@ document.addEventListener('keydown', (e) => {
       cameraMode = (cameraMode + 1) % 3;
       controller.setCameraMode(cameraMode);
       break;
+    case 'k':
+      setSettingsOpen(!settingsOpen);
+      break;
   }
 });
 
@@ -189,7 +220,7 @@ document.addEventListener('mousemove', (e) => {
 });
 
 document.addEventListener('click', () => {
-  if (isStarted && !document.pointerLockElement) {
+  if (isStarted && !document.pointerLockElement && !settingsOpen) {
     renderer.domElement.requestPointerLock();
   }
 });

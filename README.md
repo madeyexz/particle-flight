@@ -23,13 +23,14 @@ This project is inspired by [SCREE - Infinite Flight](https://www.scree.app/) by
 
 | Key | Action |
 |-----|--------|
-| `Mouse` | Steer |
+| `Mouse` | Pitch & roll |
 | `W` / `S` | Throttle up/down |
 | `A` / `D` | Yaw (rudder) |
 | `Shift` | Boost |
 | `Space` | Sonar ping |
 | `R` | Toggle terrain highlight |
 | `G` | Cycle camera modes |
+| `K` | Settings (invert Y) |
 
 ## Tech Stack
 
