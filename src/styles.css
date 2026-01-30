@@ -201,6 +201,55 @@ kbd {
   color: #f90;
 }
 
+/* Center HUD (Afterburner + G-Force) */
+.center-hud {
+  position: absolute;
+  bottom: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Afterburner bar */
+.afterburner-bar {
+  position: relative;
+  width: 120px;
+  height: 8px;
+  background: rgba(255, 153, 0, 0.15);
+  border: 1px solid rgba(255, 153, 0, 0.4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.afterburner-fill {
+  height: 100%;
+  width: 100%;
+  background: #4af;
+  transition: width 0.1s ease-out, background 0.2s ease;
+}
+
+.afterburner-label {
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  color: #f90;
+  opacity: 0.7;
+}
+
+/* G-Force display */
+.g-force {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #4af;
+  text-shadow: 0 0 10px currentColor;
+  transition: color 0.2s ease;
+}
+
 /* Sonar effect */
 .sonar-ring {
   position: fixed;

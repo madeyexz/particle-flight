@@ -148,8 +148,8 @@ document.addEventListener('keydown', (e) => {
   switch (e.key.toLowerCase()) {
     case 'w': controller.throttle = 1; break;
     case 's': controller.throttle = -1; break;
-    case 'a': controller.strafe = -1; break;
-    case 'd': controller.strafe = 1; break;
+    case 'a': controller.rollInput = -1; break;
+    case 'd': controller.rollInput = 1; break;
     case 'shift': controller.boost = true; break;
     case ' ':
       e.preventDefault();
@@ -171,7 +171,7 @@ document.addEventListener('keyup', (e) => {
 
   switch (e.key.toLowerCase()) {
     case 'w': case 's': controller.throttle = 0; break;
-    case 'a': case 'd': controller.strafe = 0; break;
+    case 'a': case 'd': controller.rollInput = 0; break;
     case 'shift': controller.boost = false; break;
   }
 });
@@ -187,32 +187,65 @@ document.addEventListener('click', () => {
   }
 });
 
+// Afterburner bar element
+const afterburnerBar = document.getElementById('afterburner-bar');
+const afterburnerFill = document.getElementById('afterburner-fill');
+const gForceDisplay = document.getElementById('g-force');
+
 // Update HUD
 function updateHUD() {
   const speed = controller.speed;
   const alt = airplane.position.y;
 
-  // Speed gauge (max 160)
-  const speedPercent = Math.min(speed / 160, 1);
+  // Speed gauge (max 420 for afterburner)
+  const speedPercent = Math.min(speed / 420, 1);
   const speedOffset = arcLength * (1 - speedPercent);
   speedArc.style.strokeDashoffset = speedOffset;
-  speedValue.textContent = speed.toFixed(1);
+  speedValue.textContent = Math.round(speed);
 
   // Position speed value along the arc
   const speedPos = getBezierPoint(speedPercent, true);
   speedDisplay.style.top = `${speedPos.y / 140 * 100}%`;
   speedDisplay.style.left = `${speedPos.x / 100 * 100 - 35}%`;
 
-  // Altitude gauge (max 200)
-  const altPercent = Math.min(alt / 200, 1);
+  // Altitude gauge (max 400)
+  const altPercent = Math.min(alt / 400, 1);
   const altOffset = arcLength * (1 - altPercent);
   altArc.style.strokeDashoffset = altOffset;
-  altValue.textContent = alt.toFixed(1);
+  altValue.textContent = Math.round(alt);
 
   // Position alt value along the arc
   const altPos = getBezierPoint(altPercent, false);
   altDisplay.style.top = `${altPos.y / 140 * 100}%`;
   altDisplay.style.right = `${(100 - altPos.x) / 100 * 100 - 35}%`;
+
+  // Afterburner fuel bar
+  if (afterburnerFill) {
+    const fuelPercent = controller.getAfterburnerPercent();
+    afterburnerFill.style.width = `${fuelPercent * 100}%`;
+
+    // Color based on fuel level
+    if (fuelPercent < 0.2) {
+      afterburnerFill.style.background = '#f44';
+    } else if (controller.afterburnerActive) {
+      afterburnerFill.style.background = '#ff6600';
+    } else {
+      afterburnerFill.style.background = '#4af';
+    }
+  }
+
+  // G-Force display
+  if (gForceDisplay) {
+    const g = controller.gForceSmoothed;
+    gForceDisplay.textContent = `${g.toFixed(1)}G`;
+    if (g > 4) {
+      gForceDisplay.style.color = '#f44';
+    } else if (g > 2.5) {
+      gForceDisplay.style.color = '#fa4';
+    } else {
+      gForceDisplay.style.color = '#4af';
+    }
+  }
 }
 
 // Handle resize
