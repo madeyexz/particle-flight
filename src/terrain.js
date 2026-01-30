@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
 // Terrain configuration
-const TERRAIN_SIZE = 1000;
-const PARTICLE_COUNT = 150000;
+const TERRAIN_SIZE = 1500;
+const PARTICLE_COUNT = 200000;
 
 // Simplex noise implementation
 class SimplexNoise {
@@ -143,7 +143,7 @@ const fragmentShader = `
     float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
 
     // Distance fog
-    float fog = 1.0 - smoothstep(100.0, 700.0, vDistance);
+    float fog = 1.0 - smoothstep(100.0, 1000.0, vDistance);
 
     // Color based on highlight mode
     vec3 color;
@@ -225,6 +225,7 @@ export function createTerrain(scene) {
   });
 
   const points = new THREE.Points(geometry, material);
+  points.frustumCulled = false; // Prevent disappearing
   scene.add(points);
 
   return points;

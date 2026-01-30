@@ -7,7 +7,7 @@ import { createSonarEffect, updateSonarEffects } from './effects.js';
 // Scene setup
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0d1117);
-scene.fog = new THREE.FogExp2(0x0d1117, 0.002);
+scene.fog = new THREE.FogExp2(0x0d1117, 0.001);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
