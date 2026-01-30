@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Particle Flight</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <h1 class="title">FLIGHT</h1>
+    <span class="prompt">PRESS ENTER</span>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-center">
+      <!-- Speed Gauge (left) -->
+      <div class="arc-gauge speed-gauge">
+        <svg viewBox="0 0 80 120">
+          <!-- Tick marks -->
+          <g class="gauge-ticks" id="speed-ticks"></g>
+          <!-- Arc background -->
+          <path class="gauge-arc-bg" d="M 10 100 Q 10 20 70 20" />
+          <!-- Arc fill -->
+          <path class="gauge-arc-fill" id="speed-arc" d="M 10 100 Q 10 20 70 20"
+                stroke-dasharray="150" stroke-dashoffset="150" />
+        </svg>
+        <div class="gauge-value"><span id="speed-value">0.0</span></div>
+        <div class="gauge-label">SPD</div>
+      </div>
+
+      <!-- Airplane indicator -->
+      <div class="airplane-indicator">
+        <svg viewBox="0 0 30 20" fill="none">
+          <!-- Simple paper airplane shape -->
+          <path d="M 15 2 L 2 18 L 15 14 L 28 18 Z"
+                fill="#f60" stroke="#f90" stroke-width="1"/>
+          <path d="M 15 14 L 15 8" stroke="#f90" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- Altitude Gauge (right) -->
+      <div class="arc-gauge alt-gauge">
+        <svg viewBox="0 0 80 120">
+          <!-- Tick marks -->
+          <g class="gauge-ticks" id="alt-ticks"></g>
+          <!-- Arc background -->
+          <path class="gauge-arc-bg" d="M 10 100 Q 10 20 70 20" />
+          <!-- Arc fill -->
+          <path class="gauge-arc-fill" id="alt-arc" d="M 10 100 Q 10 20 70 20"
+                stroke-dasharray="150" stroke-dashoffset="150" />
+        </svg>
+        <div class="gauge-value"><span id="alt-value">0.0</span></div>
+        <div class="gauge-label">ALT</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls Help -->
+  <div id="controls" class="hidden">
+    <span><kbd>Space</kbd> Ping Sonar</span>
+    <span><kbd>G</kbd> Change Camera</span>
+    <span><kbd>W</kbd> <kbd>S</kbd> Throttle</span>
+    <span><kbd>A</kbd> <kbd>D</kbd> Strafe</span>
+    <span><kbd>Mouse</kbd> Steer</span>
+    <span><kbd>Shift</kbd> Boost</span>
+    <span><kbd>R</kbd> Ground Highlight</span>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

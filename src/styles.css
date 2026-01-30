@@ -1,0 +1,254 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0d1117;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  color: #f90;
+}
+
+canvas {
+  display: block;
+}
+
+/* Start Screen */
+#start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0d1117;
+  z-index: 100;
+  transition: opacity 0.5s ease-out;
+}
+
+#start-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.logo {
+  width: 300px;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 4rem;
+  font-weight: bold;
+  letter-spacing: 0.5rem;
+  color: #f90;
+  text-shadow: 0 0 20px rgba(255, 153, 0, 0.5);
+  margin-bottom: 2rem;
+  /* Striped effect like SCREE logo */
+  background: repeating-linear-gradient(
+    0deg,
+    #f90 0px,
+    #f90 8px,
+    transparent 8px,
+    transparent 12px
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.prompt {
+  font-size: 0.8rem;
+  letter-spacing: 0.3rem;
+  color: #f90;
+  opacity: 0.6;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* HUD Container */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#hud.hidden {
+  display: none;
+}
+
+/* Center HUD - Airplane indicator and gauges */
+.hud-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+
+/* Arc Gauge */
+.arc-gauge {
+  position: relative;
+  width: 80px;
+  height: 120px;
+}
+
+.arc-gauge svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gauge-arc-bg {
+  fill: none;
+  stroke: rgba(255, 153, 0, 0.2);
+  stroke-width: 3;
+}
+
+.gauge-arc-fill {
+  fill: none;
+  stroke: #f90;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.1s ease-out;
+}
+
+.gauge-ticks {
+  fill: none;
+  stroke: #f90;
+  stroke-width: 1;
+}
+
+.gauge-value {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #f90;
+}
+
+.gauge-label {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  letter-spacing: 0.15rem;
+  color: #f90;
+  opacity: 0.7;
+}
+
+/* Speed gauge on left */
+.speed-gauge {
+  transform: scaleX(-1);
+}
+
+.speed-gauge .gauge-value,
+.speed-gauge .gauge-label {
+  transform: translateX(-50%) scaleX(-1);
+}
+
+/* Airplane indicator */
+.airplane-indicator {
+  width: 30px;
+  height: 20px;
+}
+
+.airplane-indicator svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Controls Bar */
+#controls {
+  position: fixed;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 0.7rem;
+  color: #f90;
+  z-index: 10;
+}
+
+#controls.hidden {
+  display: none;
+}
+
+#controls span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  background: rgba(255, 153, 0, 0.15);
+  border: 1px solid rgba(255, 153, 0, 0.4);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 0.65rem;
+  color: #f90;
+}
+
+/* Footer */
+#footer {
+  position: fixed;
+  bottom: 15px;
+  right: 20px;
+  font-size: 0.7rem;
+  color: #f90;
+  opacity: 0.6;
+  z-index: 10;
+}
+
+#footer.hidden {
+  display: none;
+}
+
+#footer a {
+  color: #f90;
+  text-decoration: none;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+}
+
+/* Sonar effect */
+.sonar-ring {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #f90;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sonar-expand 2s ease-out forwards;
+  z-index: 5;
+}
+
+@keyframes sonar-expand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 150vmax;
+    height: 150vmax;
+    opacity: 0;
+  }
+}
