@@ -121,6 +121,7 @@
     <span><kbd>G</kbd> Camera</span>
     <span><kbd>R</kbd> Terrain</span>
     <span><kbd>K</kbd> Settings</span>
+    <span><kbd>H</kbd> Debug</span>
   </div>
 
   <!-- Settings HUD -->
@@ -130,7 +131,17 @@
       <span>Invert Y</span>
       <input type="checkbox" id="invert-y-toggle">
     </label>
+    <label class="settings-row" for="debug-hud-toggle">
+      <span>Debug HUD</span>
+      <input type="checkbox" id="debug-hud-toggle">
+    </label>
     <div class="settings-hint"><kbd>K</kbd> Close</div>
+  </div>
+
+  <!-- Debug HUD -->
+  <div id="debug-hud" class="debug-hud hidden" aria-hidden="true">
+    <div class="debug-title">DEBUG</div>
+    <pre id="debug-output"></pre>
   </div>
 
   <script type="module" src="/src/main.js"></script>

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { createTerrain, updateTerrain } from './terrain.js';
 import { createAirplane } from './airplane.js';
-import { FlightController } from './controls.js';
+import { FlightController, toDeg } from './controls.js';
 import { createSonarEffect, updateSonarEffects } from './effects.js';
 
 // Scene setup
@@ -29,6 +29,8 @@ scene.add(airplane);
 
 // Flight controller
 const controller = new FlightController(airplane, camera);
+window.__flightController = controller;
+window.__flightTelemetry = controller.telemetry;
 
 // State
 let isStarted = false;
@@ -37,10 +39,14 @@ let cameraMode = 0;
 let lastAltitude = 0;
 let verticalSpeed = 0;
 let settingsOpen = false;
+let debugOpen = false;
 
 // Settings UI
 const settingsPanel = document.getElementById('settings-panel');
 const invertYToggle = document.getElementById('invert-y-toggle');
+const debugHud = document.getElementById('debug-hud');
+const debugOutput = document.getElementById('debug-output');
+const debugToggle = document.getElementById('debug-hud-toggle');
 
 function setSettingsOpen(open) {
   settingsOpen = open;
@@ -58,10 +64,25 @@ function setSettingsOpen(open) {
   }
 }
 
+function setDebugOpen(open) {
+  debugOpen = open;
+  if (debugHud) {
+    debugHud.classList.toggle('hidden', !open);
+    debugHud.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+}
+
 if (invertYToggle) {
   invertYToggle.checked = controller.invertY;
   invertYToggle.addEventListener('change', () => {
     controller.setInvertY(invertYToggle.checked);
+  });
+}
+
+if (debugToggle) {
+  debugToggle.checked = debugOpen;
+  debugToggle.addEventListener('change', () => {
+    setDebugOpen(debugToggle.checked);
   });
 }
 
@@ -201,6 +222,12 @@ document.addEventListener('keydown', (e) => {
     case 'k':
       setSettingsOpen(!settingsOpen);
       break;
+    case 'h':
+      setDebugOpen(!debugOpen);
+      if (debugToggle) {
+        debugToggle.checked = debugOpen;
+      }
+      break;
   }
 });
 
@@ -276,9 +303,8 @@ function updateHUD(delta) {
     gForceEl.classList.add('warning');
   }
 
-  // Throttle bar
-  const throttlePercent = ((controller.speed - controller.minSpeed) /
-    (controller.cruiseSpeed - controller.minSpeed)) * 100;
+  // Throttle bar (throttle setting, not speed)
+  const throttlePercent = controller.throttleSetting * 100;
   throttleFill.style.width = `${Math.max(0, Math.min(100, throttlePercent))}%`;
 
   // Afterburner bar
@@ -300,6 +326,22 @@ function updateHUD(delta) {
     verticalSpeedEl.classList.add('danger');
   } else if (verticalSpeed < -20) {
     verticalSpeedEl.classList.add('warning');
+  }
+
+  if (debugOpen && debugOutput && controller.telemetry) {
+    const t = controller.telemetry;
+    const lines = [
+      `SPD  ${t.speed.toFixed(1)} m/s`,
+      `THR  ${(t.throttle * 100).toFixed(0)}%  AB ${(controller.getAfterburnerPercent() * 100).toFixed(0)}%`,
+      `AOA  ${toDeg(t.aoa).toFixed(1)}°  TRIM ${toDeg(t.aoaTrim).toFixed(1)}°`,
+      `CMD  ${toDeg(t.aoaTarget).toFixed(1)}°  G ${t.gForce.toFixed(2)} / ${t.gCommand.toFixed(2)}`,
+      `BETA ${toDeg(t.beta).toFixed(1)}°  AUTH ${(t.authority * 100).toFixed(0)}%`,
+      `CL ${t.cl.toFixed(2)} CD ${t.cd.toFixed(2)} CY ${t.cy.toFixed(2)}`,
+      `LFT ${t.lift.toFixed(2)} DRG ${t.drag.toFixed(2)} SID ${t.side.toFixed(2)}`,
+      `P/R/Y ${toDeg(t.pitchRate).toFixed(0)} ${toDeg(t.rollRate).toFixed(0)} ${toDeg(t.yawRate).toFixed(0)}`,
+      `STALL ${(t.stall * 100).toFixed(0)}%`
+    ];
+    debugOutput.textContent = lines.join('\n');
   }
 }
 
