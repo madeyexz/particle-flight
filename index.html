@@ -15,39 +15,45 @@
 
   <!-- HUD -->
   <div id="hud" class="hidden">
-    <div class="hud-center">
-      <!-- Speed Gauge (left) -->
-      <div class="arc-gauge speed-gauge">
-        <svg viewBox="0 0 80 120">
-          <!-- Tick marks -->
-          <g class="gauge-ticks" id="speed-ticks"></g>
-          <!-- Arc background -->
-          <path class="gauge-arc-bg" d="M 10 100 Q 10 20 70 20" />
-          <!-- Arc fill -->
-          <path class="gauge-arc-fill" id="speed-arc" d="M 10 100 Q 10 20 70 20"
-                stroke-dasharray="150" stroke-dashoffset="150" />
-        </svg>
-        <div class="gauge-value"><span id="speed-value">0.0</span></div>
-        <div class="gauge-label">SPD</div>
+    <!-- Speed Gauge (left) -->
+    <div class="gauge gauge-left">
+      <svg viewBox="0 0 100 140" class="gauge-svg">
+        <!-- Tick marks -->
+        <g id="speed-ticks" class="ticks"></g>
+        <!-- Arc background -->
+        <path class="arc-bg" d="M 85 130 Q 85 10 15 10" />
+        <!-- Arc fill (will be updated via JS) -->
+        <path id="speed-arc" class="arc-fill" d="M 85 130 Q 85 10 15 10" />
+      </svg>
+      <div class="gauge-value" id="speed-display">
+        <span id="speed-value">0.0</span>
       </div>
+      <div class="gauge-label">SPD</div>
+    </div>
 
-      <!-- Crosshair only (airplane is 3D model) -->
-      <div class="crosshair"></div>
+    <!-- Center airplane indicator -->
+    <div class="center-indicator">
+      <svg viewBox="0 0 40 25" class="airplane-svg">
+        <path d="M 20 3 L 5 20 L 20 16 L 35 20 Z"
+              fill="none" stroke="#f90" stroke-width="1.5"/>
+        <path d="M 20 16 L 20 10" stroke="#f90" stroke-width="1"/>
+      </svg>
+    </div>
 
-      <!-- Altitude Gauge (right) -->
-      <div class="arc-gauge alt-gauge">
-        <svg viewBox="0 0 80 120">
-          <!-- Tick marks -->
-          <g class="gauge-ticks" id="alt-ticks"></g>
-          <!-- Arc background -->
-          <path class="gauge-arc-bg" d="M 10 100 Q 10 20 70 20" />
-          <!-- Arc fill -->
-          <path class="gauge-arc-fill" id="alt-arc" d="M 10 100 Q 10 20 70 20"
-                stroke-dasharray="150" stroke-dashoffset="150" />
-        </svg>
-        <div class="gauge-value"><span id="alt-value">0.0</span></div>
-        <div class="gauge-label">ALT</div>
+    <!-- Altitude Gauge (right) -->
+    <div class="gauge gauge-right">
+      <svg viewBox="0 0 100 140" class="gauge-svg">
+        <!-- Tick marks -->
+        <g id="alt-ticks" class="ticks"></g>
+        <!-- Arc background -->
+        <path class="arc-bg" d="M 15 130 Q 15 10 85 10" />
+        <!-- Arc fill -->
+        <path id="alt-arc" class="arc-fill" d="M 15 130 Q 15 10 85 10" />
+      </svg>
+      <div class="gauge-value" id="alt-display">
+        <span id="alt-value">0.0</span>
       </div>
+      <div class="gauge-label">ALT</div>
     </div>
   </div>
 

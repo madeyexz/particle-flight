@@ -33,11 +33,6 @@ canvas {
   pointer-events: none;
 }
 
-.logo {
-  width: 300px;
-  margin-bottom: 2rem;
-}
-
 .title {
   font-size: 4rem;
   font-weight: bold;
@@ -45,16 +40,6 @@ canvas {
   color: #f90;
   text-shadow: 0 0 20px rgba(255, 153, 0, 0.5);
   margin-bottom: 2rem;
-  /* Striped effect like SCREE logo */
-  background: repeating-linear-gradient(
-    0deg,
-    #f90 0px,
-    #f90 8px,
-    transparent 8px,
-    transparent 12px
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
 }
 
 .prompt {
@@ -76,43 +61,46 @@ canvas {
   inset: 0;
   pointer-events: none;
   z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #hud.hidden {
   display: none;
 }
 
-/* Center HUD - Airplane indicator and gauges */
-.hud-center {
+/* Gauge base styles */
+.gauge {
   position: absolute;
-  left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 80px;
-}
-
-/* Arc Gauge */
-.arc-gauge {
-  position: relative;
+  transform: translateY(-50%);
   width: 80px;
-  height: 120px;
+  height: 140px;
 }
 
-.arc-gauge svg {
+.gauge-left {
+  left: calc(50% - 180px);
+}
+
+.gauge-right {
+  right: calc(50% - 180px);
+}
+
+.gauge-svg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
-.gauge-arc-bg {
+/* Arc styles */
+.arc-bg {
   fill: none;
-  stroke: rgba(255, 153, 0, 0.2);
-  stroke-width: 3;
+  stroke: rgba(255, 153, 0, 0.15);
+  stroke-width: 2;
 }
 
-.gauge-arc-fill {
+.arc-fill {
   fill: none;
   stroke: #f90;
   stroke-width: 3;
@@ -120,72 +108,62 @@ canvas {
   transition: stroke-dashoffset 0.1s ease-out;
 }
 
-.gauge-ticks {
-  fill: none;
-  stroke: #f90;
-  stroke-width: 1;
+/* Tick marks */
+.ticks rect {
+  fill: #f90;
 }
 
+/* Gauge value - positioned dynamically */
 .gauge-value {
   position: absolute;
-  bottom: 25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #f90;
+  white-space: nowrap;
+  transition: top 0.1s ease-out, left 0.1s ease-out, right 0.1s ease-out;
 }
 
+.gauge-left .gauge-value {
+  /* Will be positioned by JS */
+}
+
+.gauge-right .gauge-value {
+  /* Will be positioned by JS */
+}
+
+/* Gauge label */
 .gauge-label {
   position: absolute;
-  bottom: 5px;
+  bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   letter-spacing: 0.15rem;
   color: #f90;
   opacity: 0.7;
 }
 
-/* Speed gauge on left */
-.speed-gauge {
-  transform: scaleX(-1);
+.gauge-left .gauge-label {
+  left: 70%;
 }
 
-.speed-gauge .gauge-value,
-.speed-gauge .gauge-label {
-  transform: translateX(-50%) scaleX(-1);
+.gauge-right .gauge-label {
+  left: 30%;
 }
 
-/* Crosshair */
-.crosshair {
-  width: 20px;
-  height: 20px;
-  position: relative;
-}
-
-.crosshair::before,
-.crosshair::after {
-  content: '';
+/* Center airplane indicator */
+.center-indicator {
   position: absolute;
-  background: #f90;
-  opacity: 0.6;
-}
-
-.crosshair::before {
-  width: 100%;
-  height: 2px;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-}
-
-.crosshair::after {
-  width: 2px;
-  height: 100%;
   left: 50%;
-  top: 0;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 32px;
+}
+
+.airplane-svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* Controls Bar */
@@ -221,30 +199,6 @@ kbd {
   font-family: inherit;
   font-size: 0.65rem;
   color: #f90;
-}
-
-/* Footer */
-#footer {
-  position: fixed;
-  bottom: 15px;
-  right: 20px;
-  font-size: 0.7rem;
-  color: #f90;
-  opacity: 0.6;
-  z-index: 10;
-}
-
-#footer.hidden {
-  display: none;
-}
-
-#footer a {
-  color: #f90;
-  text-decoration: none;
-}
-
-#footer a:hover {
-  text-decoration: underline;
 }
 
 /* Sonar effect */
